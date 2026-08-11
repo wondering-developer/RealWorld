@@ -1,8 +1,10 @@
 import "zone.js";
 import "zone.js/testing";
+import "@angular/compiler";
+import { provideHttpClient } from "@angular/common/http";
 import {
-	HttpClientTestingModule,
 	HttpTestingController,
+	provideHttpClientTesting,
 } from "@angular/common/http/testing";
 import { TestBed, getTestBed } from "@angular/core/testing";
 import {
@@ -32,7 +34,9 @@ describe("AiTagSuggestionsService", () => {
 	let httpMock: HttpTestingController;
 
 	beforeEach(() => {
-		TestBed.configureTestingModule({ imports: [HttpClientTestingModule] });
+		TestBed.configureTestingModule({
+			providers: [provideHttpClient(), provideHttpClientTesting()],
+		});
 		service = TestBed.inject(AiTagSuggestionsService);
 		httpMock = TestBed.inject(HttpTestingController);
 		vi.useFakeTimers();
