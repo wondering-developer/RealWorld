@@ -4,6 +4,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { combineLatest } from 'rxjs';
 import { Errors } from '../../../../core/models/errors.model';
 import { ArticlesService } from '../../services/articles.service';
+import { AiTagSuggestionsService } from '../../services/ai-tag-suggestions.service';
 import { UserService } from '../../../../core/auth/services/user.service';
 import { ListErrorsComponent } from '../../../../shared/components/list-errors.component';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -22,6 +23,7 @@ interface ArticleForm {
 })
 export default class EditorComponent implements OnInit {
   tagList = signal<string[]>([]);
+  suggestedTags = signal<string[]>([]);
   articleForm: UntypedFormGroup = new FormGroup<ArticleForm>({
     title: new FormControl('', { nonNullable: true }),
     description: new FormControl('', { nonNullable: true }),
@@ -31,6 +33,7 @@ export default class EditorComponent implements OnInit {
 
   errors = signal<Errors | null>(null);
   isSubmitting = signal(false);
+  isSuggestingTags = signal(false);
   destroyRef = inject(DestroyRef);
 
   constructor(
@@ -38,6 +41,7 @@ export default class EditorComponent implements OnInit {
     private readonly route: ActivatedRoute,
     private readonly router: Router,
     private readonly userService: UserService,
+    private readonly aiTagSuggestions: AiTagSuggestionsService,
   ) {}
 
   ngOnInit() {
@@ -68,6 +72,32 @@ export default class EditorComponent implements OnInit {
 
   removeTag(tagName: string): void {
     this.tagList.update(tags => tags.filter(tag => tag !== tagName));
+  }
+
+  suggestTags(): void {
+    this.errors.set(null);
+    this.isSuggestingTags.set(true);
+    const { title = '', description = '', body = '' } = this.articleForm.value;
+    this.aiTagSuggestions
+      .suggestTags(title, description, body)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: tags => {
+          this.suggestedTags.set(tags.filter(t => !this.tagList().includes(t)));
+          this.isSuggestingTags.set(false);
+        },
+        error: err => {
+          this.errors.set(err);
+          this.isSuggestingTags.set(false);
+        },
+      });
+  }
+
+  addTagFromSuggestion(tag: string): void {
+    if (!this.tagList().includes(tag)) {
+      this.tagList.update(tags => [...tags, tag]);
+    }
+    this.suggestedTags.update(tags => tags.filter(t => t !== tag));
   }
 
   submitForm(): void {

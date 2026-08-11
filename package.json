@@ -38,7 +38,8 @@
     "@rx-angular/template": "21.0.0",
     "marked": "^17.0.1",
     "rxjs": "^7.8.2",
-    "tslib": "^2.8.1"
+    "tslib": "^2.8.1",
+    "zone.js": "^0.16.2"
   },
   "devDependencies": {
     "@analogjs/vite-plugin-angular": "^2.2.2",

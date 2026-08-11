@@ -45,6 +45,13 @@
                 [formControl]="tagField"
                 (keyup.enter)="addTag()"
               />
+              <button
+                type="button"
+                [disabled]="isSuggestingTags() || !articleForm.value.title || !articleForm.value.body"
+                (click)="suggestTags()"
+              >
+                {{ isSuggestingTags() ? 'Suggesting...' : 'Suggest Tags' }}
+              </button>
               <div class="tag-list">
                 @for (tag of tagList(); track tag) {
                   <span class="tag-default tag-pill">
@@ -53,6 +60,15 @@
                   </span>
                 }
               </div>
+              @if (suggestedTags().length > 0) {
+                <div class="tag-list">
+                  @for (tag of suggestedTags(); track tag) {
+                    <button type="button" class="tag-default tag-pill" (click)="addTagFromSuggestion(tag)">
+                      {{ tag }}
+                    </button>
+                  }
+                </div>
+              }
             </fieldset>
 
             <button class="btn btn-lg pull-xs-right btn-primary" type="button" (click)="submitForm()">
