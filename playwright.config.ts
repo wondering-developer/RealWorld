@@ -9,10 +9,13 @@ export default defineConfig({
   ...baseConfig,
   testDir: '.',
   testMatch: ['realworld/specs/e2e/**/*.spec.ts', 'e2e/**/*.spec.ts'],
+  retries: 1,
+  workers: 1,
 
   use: {
     ...baseConfig.use,
     baseURL: 'http://localhost:4200',
+    trace: 'on-first-retry',
   },
 
   webServer: {
